@@ -1,0 +1,8 @@
+app.log
+prompt.txt
+dist
+*.egg-info
+llms-full.txt
+PYTHON_SDK_README.md
+.vscode
+*__pycache__*
