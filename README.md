@@ -84,7 +84,24 @@ If installed from source, run:
 ```bash
 python -m tcinvest_mcp_server --env path/to/your/.env
 ```
+### MCP Client Setup - VsCode for example
 
+To configure the MCP client, use the following JSON structure:
+
+```json
+{
+  "servers": {
+    "tcinvest": {
+      "url": "http://localhost:8000/sse",
+      "type": "sse"
+    }
+  }
+}
+```
+
+- `url`: The endpoint for the TCInvest server. Replace `http://localhost:8000/sse` with the actual server URL if different.
+- `type`: The connection type. For TCInvest, this is set to `sse` (Server-Sent Events).
+- Ensure the server is running and accessible at the specified URL before using the client.
 ## Usage
 - The server exposes MCP tools for bond data retrieval.
 - Logs are written to `app.log`.
