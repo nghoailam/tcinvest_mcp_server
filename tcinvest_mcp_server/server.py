@@ -31,7 +31,7 @@ from .services.tcanalysis import (
     get_rating_valuation,
     get_company_sub_companies,
     get_company_insider_dealing,
-    get_recommend_his
+    get_recommend_his,
 )
 from . import constant
 from dotenv import load_dotenv
@@ -39,16 +39,15 @@ from mcp.server.fastmcp import FastMCP
 from pydantic import Field
 from .api.client import ApiClient
 
+
 def configure_logging():
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s [%(filename)s:%(lineno)d]",
-        handlers=[
-            logging.FileHandler("app.log"),
-            logging.StreamHandler()
-        ]
+        handlers=[logging.FileHandler("app.log"), logging.StreamHandler()],
     )
     logging.info("Logging configured. Writing to app.log.")
+
 
 def load_configuration(env_path=None):
     if env_path:
@@ -58,12 +57,16 @@ def load_configuration(env_path=None):
 
     config = {
         "API_KEY": os.getenv("TCBS_API_KEY"),
-        "LOG_LEVEL": os.getenv("LOG_LEVEL", "INFO")
+        "LOG_LEVEL": os.getenv("LOG_LEVEL", "INFO"),
+        "HOST": os.getenv("HOST", "0.0.0.0"),
+        "PORT": int(os.getenv("PORT", 8000)),
     }
+
     return config
 
+
 def create_server(env_path=None):
-    
+
     configure_logging()
     config = load_configuration(env_path)
     logger = logging.getLogger(__name__)
@@ -71,11 +74,16 @@ def create_server(env_path=None):
     logger.info("Starting server with configuration: %s", config)
 
     mcp = FastMCP("TCinvest MCP Server")
-    client_aws = ApiClient(config['API_KEY'], constant.API_EXT_AWS)
-    client = ApiClient(config['API_KEY'], constant.API_EXT)
-    
+    client_aws = ApiClient(config["API_KEY"], constant.API_EXT_AWS)
+    client = ApiClient(config["API_KEY"], constant.API_EXT)
+
     @mcp.tool()
-    def get_iconnect_bond_products_tool(filter: str = "channel:cus,markettype:iconnect", level: str="basic", order_by: str = "code(asc)", excludePP: int = 0) -> dict:
+    def get_iconnect_bond_products_tool(
+        filter: str = "channel:cus,markettype:iconnect",
+        level: str = "basic",
+        order_by: str = "code(asc)",
+        excludePP: int = 0,
+    ) -> dict:
         """
         Get bond products from iConnect.
         """
@@ -83,7 +91,9 @@ def create_server(env_path=None):
         return get_iconnect_bond_products(client, filter, level, order_by, excludePP)
 
     @mcp.tool()
-    def get_ticker_activity_news_tool(ticker: str, page: int = 0, size: int = 15) -> dict:
+    def get_ticker_activity_news_tool(
+        ticker: str, page: int = 0, size: int = 15
+    ) -> dict:
         """
         Get activity news for a ticker from tcanalysis API.
         """
@@ -132,7 +142,9 @@ def create_server(env_path=None):
         return get_psycho_toptrading(client_aws)
 
     @mcp.tool()
-    def get_psycho_timeline_tool(ticker: str = None, scale: int = None, timeframe: int = None) -> dict:
+    def get_psycho_timeline_tool(
+        ticker: str = None, scale: int = None, timeframe: int = None
+    ) -> dict:
         """
         Get psychology timeline from tcanalysis API.
         """
@@ -181,7 +193,9 @@ def create_server(env_path=None):
         return get_evaluation(client_aws, ticker)
 
     @mcp.tool()
-    def get_evaluation_historical_chart_tool(ticker: str, period: int = None, tWindow: str = None) -> dict:
+    def get_evaluation_historical_chart_tool(
+        ticker: str, period: int = None, tWindow: str = None
+    ) -> dict:
         """
         Get historical chart evaluation for a ticker from tcanalysis API.
         """
@@ -209,21 +223,27 @@ def create_server(env_path=None):
         return get_ticker_events_news(client_aws, ticker, page, size)
 
     @mcp.tool()
-    def get_finance_incomestatement_tool(ticker: str, yearly: int = 0, isAll: bool = True) -> dict:
+    def get_finance_incomestatement_tool(
+        ticker: str, yearly: int = 0, isAll: bool = True
+    ) -> dict:
         """
         Get income statement for a ticker from tcanalysis API.
         """
         return get_finance_incomestatement(client_aws, ticker, yearly, isAll)
 
     @mcp.tool()
-    def get_finance_balancesheet_tool(ticker: str, yearly: int = 0, isAll: bool = True) -> dict:
+    def get_finance_balancesheet_tool(
+        ticker: str, yearly: int = 0, isAll: bool = True
+    ) -> dict:
         """
         Get balance sheet for a ticker from tcanalysis API.
         """
         return get_finance_balancesheet(client_aws, ticker, yearly, isAll)
 
     @mcp.tool()
-    def get_news_events_tool(fData: str = None, fType: str = None, page: int = 0, size: int = 20) -> dict:
+    def get_news_events_tool(
+        fData: str = None, fType: str = None, page: int = 0, size: int = 20
+    ) -> dict:
         """
         Get news events from tcanalysis API.
         """
@@ -265,28 +285,43 @@ def create_server(env_path=None):
         return get_rating_valuation(client_aws, ticker, fType)
 
     @mcp.tool()
-    def get_company_sub_companies_tool(company: str, page: int = 0, size: int = 20) -> dict:
+    def get_company_sub_companies_tool(
+        company: str, page: int = 0, size: int = 20
+    ) -> dict:
         """
         Get sub-companies for a company from tcanalysis API.
         """
         return get_company_sub_companies(client_aws, company, page, size)
 
     @mcp.tool()
-    def get_company_insider_dealing_tool(company: str, page: int = 0, size: int = 20) -> dict:
+    def get_company_insider_dealing_tool(
+        company: str, page: int = 0, size: int = 20
+    ) -> dict:
         """
         Get insider dealing for a company from tcanalysis API.
         """
         return get_company_insider_dealing(client_aws, company, page, size)
 
     @mcp.tool()
-    def get_recommend_his_tool(fData: str, fType: str = None, page: int = 0, size: int = 20, fRecommend: int = None, fTime: str = None) -> dict:
+    def get_recommend_his_tool(
+        fData: str,
+        fType: str = None,
+        page: int = 0,
+        size: int = 20,
+        fRecommend: int = None,
+        fTime: str = None,
+    ) -> dict:
         """
         Get historical recommendations from tcanalysis API.
         """
-        return get_recommend_his(client_aws, fData, fType, page, size, fRecommend, fTime)
+        return get_recommend_his(
+            client_aws, fData, fType, page, size, fRecommend, fTime
+        )
 
     return mcp
 
+
 if __name__ == "__main__":
+    config = load_configuration()
     server = create_server()
-    server.run(transport="sse")
+    server.run(host=config["HOST"], port=config["PORT"], transport="sse")
